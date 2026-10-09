@@ -5,7 +5,7 @@ import { getBillingStateCached } from "../billing.server";
 import { getUsage } from "../usage.server";
 import { entitled } from "../plans.server";
 import db from "../db.server";
-import { Page, Button, Badge, Icon } from "@shopify/polaris";
+import { Page, Icon } from "@shopify/polaris";
 import {
   ImageMagicIcon,
   MagicIcon,
@@ -13,9 +13,9 @@ import {
   GaugeIcon,
   PlanIcon,
   ImagesIcon,
-  CheckCircleIcon,
+  LockIcon,
 } from "@shopify/polaris-icons";
-import { LogoMark, RingGauge } from "../components/Brand";
+import { LogoMark, Meter } from "../components/Brand";
 
 export const loader = async ({ request }) => {
   const { admin, session } = await authenticate.admin(request);
@@ -55,126 +55,102 @@ export default function Index() {
 
   const quota = plan.monthlyImages || 0;
   const used = usage?.imagesUsed || 0;
-  const remaining = Math.max(0, quota - used);
   const pct = quota > 0 ? Math.min(100, Math.round((used / quota) * 100)) : 0;
   const fmt = (n) => Number(n).toLocaleString();
 
-  const autoStatus = !plan.autoOptimizeAllowed
-    ? { label: "Growth plan", tone: "attention" }
-    : autoOptimize
-      ? { label: "On", tone: "success" }
-      : { label: "Off", tone: undefined };
+  const autoLabel = !plan.autoOptimizeAllowed ? "Not on your plan" : autoOptimize ? "Running" : "Paused";
 
+  // One card per tool on the violet band. Locked tools link to Billing.
   const tools = [
     {
       icon: ImageMagicIcon,
-      title: "Image Optimizer",
-      desc: "Convert heavy JPEG and PNG product photos to WebP and replace them on the product, keeping image order, variant images and the featured photo.",
-      cta: "Optimize images",
-      onClick: () => navigate("/app/optimize"),
+      title: "Compress Images",
+      desc: "Re-encode JPEG and PNG product photos as WebP. Gallery order, variant images and the featured photo stay as they were.",
+      cta: "Start compressing",
+      to: "/app/optimize",
       available: true,
-      wide: true,
     },
     {
       icon: MagicIcon,
-      title: "Alt Text AI",
-      desc: "Describes each product photo for shoppers and search engines. Review the text, then apply it in one click.",
-      cta: plan.altText ? "Write alt text" : "Available on Starter",
-      onClick: () => navigate(plan.altText ? "/app/alt-text" : "/app/plan"),
+      title: "Alt Text",
+      desc: "Get a short, specific description of each product photo, check it, then save it to every image of that product.",
+      cta: "Write alt text",
+      to: "/app/alt-text",
       available: plan.altText,
-      badge: plan.altText ? undefined : { label: "Starter+", tone: "attention" },
+      needs: "Starter",
     },
     {
       icon: AutomationIcon,
       title: "Auto-Optimize",
-      desc: "Every new product is optimized in the background as soon as it is created.",
-      cta: plan.autoOptimizeAllowed ? "Manage" : "Available on Growth",
-      onClick: () => navigate(plan.autoOptimizeAllowed ? "/app/optimize" : "/app/plan"),
+      desc: "Photos on newly created products are compressed for you in the background, with no button to press.",
+      cta: "Set it up",
+      to: "/app/optimize",
       available: plan.autoOptimizeAllowed,
-      badge: autoStatus,
+      needs: "Growth",
     },
     {
       icon: GaugeIcon,
-      title: "Speed Report",
-      desc: "Run Google Lighthouse on any product page and see the page weight you removed, page by page.",
-      cta: plan.pageSpeed ? "Open Speed Report" : "Available on Growth",
-      onClick: () => navigate(plan.pageSpeed ? "/app/speed" : "/app/plan"),
+      title: "Page Speed",
+      desc: "Test any product page with Google Lighthouse and compare it with the file size you have removed.",
+      cta: "Test a page",
+      to: "/app/speed",
       available: plan.pageSpeed,
-      badge: plan.pageSpeed ? undefined : { label: "Growth+", tone: "attention" },
-      wide: true,
+      needs: "Growth",
     },
-  ];
-
-  const stats = [
-    { icon: PlanIcon, label: "Current plan", value: plan.name },
-    { icon: ImagesIcon, label: "Optimized this month", value: fmt(used) },
-    { icon: CheckCircleIcon, label: "Images remaining", value: fmt(remaining) },
-    { icon: AutomationIcon, label: "Auto-Optimize", value: autoStatus.label },
   ];
 
   return (
     <Page>
-      <section className="pl-soft pl-hero">
-        <div className="pl-hero-top">
+      <div className="pp-status-row">
+        <div className="pp-status">
+          <span className="pp-status-icon"><Icon source={PlanIcon} /></span>
           <div>
-            <span className="pl-chip"><LogoMark size={18} />Pic Pace</span>
-            <h1>
-              Lighter photos. <span className="pl-accent">Faster store.</span>
-            </h1>
-            <p className="pl-hero-sub">
-              Optimize product images, add AI alt text and check page speed, all inside your
-              Shopify admin.
-            </p>
-            <div className="pl-actions">
-              <button type="button" className="pl-btn pl-btn-primary" onClick={() => navigate("/app/optimize")}>
-                Optimize images
-              </button>
-              <button type="button" className="pl-btn pl-btn-outline" onClick={() => navigate("/app/plan")}>
-                Plans &amp; usage
-              </button>
-            </div>
+            <p className="pp-status-label">Plan</p>
+            <p className="pp-status-value">{plan.name}</p>
           </div>
-
-          <div className="pl-hero-gauge">
-            <RingGauge pct={pct} size={150} stroke={13} label={`${pct}% of this month's images used`}>
-              <span className="pl-ring-num">{`${pct}%`}</span>
-              <span className="pl-ring-unit">used</span>
-            </RingGauge>
-            <p className="pl-hero-gauge-caption">{`${fmt(used)} of ${fmt(quota)} images · resets monthly`}</p>
+          <button type="button" className="pp-link" onClick={() => navigate("/app/plan")}>Billing</button>
+        </div>
+        <div className="pp-status pp-status--wide">
+          <span className="pp-status-icon"><Icon source={ImagesIcon} /></span>
+          <div className="pp-status-grow">
+            <p className="pp-status-label">{`Images this month · ${fmt(used)} of ${fmt(quota)}`}</p>
+            <Meter pct={pct} label={`${pct}% of this month's images used`} />
           </div>
         </div>
+        <div className="pp-status">
+          <span className="pp-status-icon"><Icon source={AutomationIcon} /></span>
+          <div>
+            <p className="pp-status-label">Auto-Optimize</p>
+            <p className="pp-status-value">{autoLabel}</p>
+          </div>
+        </div>
+      </div>
 
-        <div className="pl-hero-stats">
-          {stats.map((s) => (
-            <div key={s.label} className="pl-hero-stat">
-              <p className="pl-hero-stat-label"><Icon source={s.icon} />{s.label}</p>
-              <p className="pl-hero-stat-value">{s.value}</p>
+      <header className="pp-intro">
+        <span className="pp-brand"><LogoMark size={26} />Pic Pace</span>
+        <h1>Product pages that keep pace with your shoppers</h1>
+        <p>
+          Smaller photos, clear alt text and a page speed check, run from one place in your
+          Shopify admin.
+        </p>
+      </header>
+
+      <section className="pp-band">
+        <div className="pp-band-frame">
+          {tools.map((t) => (
+            <div key={t.title} className={`pp-feature${t.available ? "" : " is-locked"}`}>
+              <span className="pp-feature-icon"><Icon source={t.available ? t.icon : LockIcon} /></span>
+              <p className="pp-feature-title">{t.title}</p>
+              <p className="pp-feature-desc">{t.desc}</p>
+              {t.available ? (
+                <button type="button" className="pp-btn pp-btn-primary" onClick={() => navigate(t.to)}>{t.cta}</button>
+              ) : (
+                <button type="button" className="pp-btn pp-btn-outline" onClick={() => navigate("/app/plan")}>{`Unlock with ${t.needs}`}</button>
+              )}
             </div>
           ))}
         </div>
       </section>
-
-      <div className="pl-section-head">
-        <p className="pl-section-title">Your tools</p>
-        <p className="pl-section-note">{`${tools.filter((t) => t.available).length} of ${tools.length} included in ${plan.name}`}</p>
-      </div>
-      <div className="pl-bento">
-        {tools.map((t) => (
-          <div key={t.title} className={`pl-tool${t.wide ? " pl-tool--wide" : ""}${t.available ? "" : " pl-tool-locked"}`}>
-            <div className="pl-tool-top">
-              <span className="pl-tool-icon"><Icon source={t.icon} /></span>
-              {t.badge && <Badge tone={t.badge.tone}>{t.badge.label}</Badge>}
-            </div>
-            <p className="pl-tool-title">{t.title}</p>
-            <p className="pl-tool-desc">{t.desc}</p>
-            <div className="pl-tool-cta">
-              <Button variant={t.available ? "primary" : "secondary"} onClick={t.onClick}>
-                {t.cta}
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
       <div style={{ height: 24 }} />
     </Page>
   );

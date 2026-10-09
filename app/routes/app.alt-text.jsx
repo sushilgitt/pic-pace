@@ -167,7 +167,7 @@ export async function action({ request }) {
   const { admin, session } = await authenticate.admin(request);
   // Tier boundary: block alt-text generation for non-entitled (Free) plans.
   if (!(await altTextAllowed(admin, session.shop))) {
-    return { error: 'Alt Text AI is available on the Starter plan and above.' };
+    return { error: 'Alt Text is included in the Starter plan and above.' };
   }
   const formData = await request.formData();
   const actionType = formData.get('actionType');
@@ -648,7 +648,7 @@ export default function AltTextSuggestions() {
     >
       <Layout>
         <Layout.Section>
-          <PageHeader icon={MagicIcon} eyebrow="Alt Text AI" title="Write alt text with AI" subtitle="AI describes each product's main image. Review the text, then apply it to all of the product's images" />
+          <PageHeader icon={MagicIcon} title="Alt Text" subtitle="Get a description of each product's main photo, check it, then save it to all of that product's images." />
         </Layout.Section>
         {error && (
           <Layout.Section>
@@ -676,22 +676,22 @@ export default function AltTextSuggestions() {
         )}
 
         <Layout.Section>
-          <div className="pl-statbar">
-            <div className="pl-stat">
-              <p className="pl-stat-label">Products</p>
-              <p className="pl-stat-value">{productCount.toLocaleString()}</p>
+          <div className="pp-statbar">
+            <div className="pp-stat">
+              <p className="pp-stat-label">Products</p>
+              <p className="pp-stat-value">{productCount.toLocaleString()}</p>
             </div>
-            <div className="pl-stat">
-              <p className="pl-stat-label">Images</p>
-              <p className="pl-stat-value">{totalImages.toLocaleString()}</p>
+            <div className="pp-stat">
+              <p className="pp-stat-label">Images</p>
+              <p className="pp-stat-value">{totalImages.toLocaleString()}</p>
             </div>
-            <div className="pl-stat">
-              <p className="pl-stat-label">Awaiting review</p>
-              <p className={`pl-stat-value${pendingCount > 0 ? ' is-warn' : ''}`}>{pendingCount.toLocaleString()}</p>
+            <div className="pp-stat">
+              <p className="pp-stat-label">Awaiting review</p>
+              <p className={`pp-stat-value${pendingCount > 0 ? ' is-warn' : ''}`}>{pendingCount.toLocaleString()}</p>
             </div>
-            <div className="pl-stat">
-              <p className="pl-stat-label">Applied</p>
-              <p className="pl-stat-value is-good">{appliedCount.toLocaleString()}</p>
+            <div className="pp-stat">
+              <p className="pp-stat-label">Applied</p>
+              <p className="pp-stat-value is-good">{appliedCount.toLocaleString()}</p>
             </div>
           </div>
         </Layout.Section>

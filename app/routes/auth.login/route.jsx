@@ -17,10 +17,10 @@ export default function Auth() {
   return (
     <AppProvider embedded={false}>
       <s-page>
-        <s-section heading="Open Pic Pace from Shopify">
+        <s-section heading="Continue in your Shopify admin">
           <s-paragraph>
-            Pic Pace lives inside your Shopify admin. Get it from the Shopify App Store, or
-            open it from Apps in your Shopify admin to continue.
+            Pic Pace runs inside Shopify. Add it from the Shopify App Store, then launch it
+            from the Apps section of your admin.
           </s-paragraph>
         </s-section>
       </s-page>

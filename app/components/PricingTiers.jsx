@@ -12,43 +12,45 @@ import { LogoMark, CheckGlyph } from "./Brand";
 // charged is set on the Partner Dashboard plans, so keep the two in sync.
 export default function PricingTiers({ pricingUrl }) {
   return (
-    <div className="pl-pricing">
-      <header className="pl-soft pl-pricing-band">
-        <span className="pl-chip"><LogoMark size={18} />Pic Pace plans</span>
-        <h1>
-          Faster product pages, <span className="pl-accent">at any size.</span>
-        </h1>
+    <div className="pp-pricing">
+      <header className="pp-pricing-head">
+        <span className="pp-brand"><LogoMark size={26} />Pic Pace</span>
+        <h1>Pick the plan that fits your catalog</h1>
         <p>
-          Optimize photos, write alt text with AI and measure the speed you gain. Start free and
-          upgrade only when your catalog needs it.
+          Every plan compresses product photos to WebP. Higher plans add alt text, automatic
+          compression for new products and page speed tests.
         </p>
       </header>
 
-      <div className="pl-pricing-grid">
-        {PLAN_TIERS.map((tier) => (
-          <div key={tier.name} className={`pl-price-card${tier.popular ? " is-popular" : ""}`}>
-            {tier.popular && <span className="pl-price-flag">MOST POPULAR</span>}
-            <p className="pl-price-name">{tier.name}</p>
-            <p className="pl-price-tag">{tier.tagline}</p>
-            <p className="pl-price-amount">
-              {`$${tier.price}`}<span>per month</span>
-            </p>
-            <p className="pl-price-annual">
-              {tier.price === 0 ? "Free forever, no card required" : `Or $${tier.priceAnnual}/year and save ~17%`}
-            </p>
-            <a href={pricingUrl} target="_top" className={`pl-btn ${tier.popular ? "pl-btn-primary" : "pl-btn-outline"} pl-price-cta`}>
-              {tier.price === 0 ? "Start free" : `Choose ${tier.name}`}
-            </a>
-            <ul className="pl-price-features">
-              {tier.features.map((f) => (
-                <li key={f}><CheckGlyph />{f}</li>
-              ))}
-            </ul>
-          </div>
-        ))}
+      <div className="pp-pricing-band">
+        <div className="pp-pricing-grid">
+          {PLAN_TIERS.map((tier) => (
+            <div key={tier.name} className={`pp-price-card${tier.popular ? " is-popular" : ""}`}>
+              <div className="pp-price-top">
+                <p className="pp-price-name">{tier.name}</p>
+                {tier.popular && <span className="pp-tag">Recommended</span>}
+              </div>
+              <p className="pp-price-tag">{tier.tagline}</p>
+              <p className="pp-price-amount">
+                {`$${tier.price}`}<span>/ month</span>
+              </p>
+              <p className="pp-price-annual">
+                {tier.price === 0 ? "No card needed" : `$${tier.priceAnnual} if paid yearly`}
+              </p>
+              <ul className="pp-price-features">
+                {tier.features.map((f) => (
+                  <li key={f}><CheckGlyph />{f}</li>
+                ))}
+              </ul>
+              <a href={pricingUrl} target="_top" className={`pp-btn ${tier.popular ? "pp-btn-primary" : "pp-btn-outline"} pp-price-cta`}>
+                {tier.price === 0 ? "Use Free" : `Get ${tier.name}`}
+              </a>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <p className="pl-pricing-foot">Billed securely through Shopify. Change or cancel your plan at any time.</p>
+      <p className="pp-pricing-foot">Billing runs through Shopify. You can switch or cancel whenever you like.</p>
     </div>
   );
 }

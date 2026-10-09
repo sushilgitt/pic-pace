@@ -8,7 +8,7 @@ import { getUsage, getRemaining } from '../usage.server';
 import { entitled } from '../plans.server';
 import db from '../db.server';
 import { mapLimit, headSizeMB, optimizeBatch } from '../optimize.server';
-import { RingGauge, Meter } from '../components/Brand';
+import { Meter } from '../components/Brand';
 import { fetchAllProducts, imageNodes, parseSummary, MAX_MEDIA_PER_PRODUCT } from '../catalog.server';
 import {
   Page,
@@ -43,7 +43,7 @@ const PRODUCTS_QUERY = `#graphql
         media(first: ${MAX_MEDIA_PER_PRODUCT}) {
           nodes { ... on MediaImage { id alt image { url } } }
         }
-        summary: metafield(namespace: "image_optimization", key: "optimization_summary") { value }
+        summary: metafield(namespace: "pic_pace", key: "optimization_summary") { value }
       }
     }
   }
@@ -300,7 +300,7 @@ export default function ProductOptimization() {
 
     // Monthly quota hit — stop the whole queue and prompt to upgrade.
     if (data.quotaExceeded) {
-      setError('You have reached this month’s image limit. Upgrade your plan to keep optimizing.');
+      setError('You have used this month’s images. Upgrade in Billing to continue.');
       queueRef.current = [];
       startNext();
       return;
@@ -454,7 +454,7 @@ export default function ProductOptimization() {
     <Page>
       <Layout>
         <Layout.Section>
-          <PageHeader icon={ImageMagicIcon} eyebrow="Image Optimizer" title="Optimize product images" subtitle="Convert photos to WebP and replace them on each product, keeping order and variant images" />
+          <PageHeader icon={ImageMagicIcon} title="Compress Images" subtitle="Turn product photos into WebP files and swap them in. Gallery order and variant images are kept." />
         </Layout.Section>
 
         {error && (
@@ -470,33 +470,31 @@ export default function ProductOptimization() {
 
         {/* Overview: monthly quota · auto-optimize · catalog stats */}
         <Layout.Section>
-          <div className="pl-overview">
-            <div className="pl-soft pl-quota">
-              <RingGauge pct={usagePct} size={96} stroke={9} label={`${usagePct}% of monthly images used`}>
-                <span className="pl-ring-num" style={{ fontSize: 18 }}>{`${usagePct}%`}</span>
-              </RingGauge>
+          <div className="pp-overview">
+            <div className="pp-card pp-quota">
               <div>
-                <p className="pl-quota-label">This month</p>
-                <p className="pl-quota-plan">{`${usedImages.toLocaleString()} / ${quota.toLocaleString()}`}</p>
-                <p className={`pl-quota-note${quotaReached ? ' is-alert' : ''}`}>
+                <p className="pp-quota-label">Images this month</p>
+                <p className="pp-quota-plan">{`${usedImages.toLocaleString()} / ${quota.toLocaleString()}`}</p>
+                <Meter pct={usagePct} label={`${usagePct}% of monthly images used`} />
+                <p className={`pp-quota-note${quotaReached ? ' is-alert' : ''}`}>
                   {quotaReached
-                    ? 'Monthly limit reached. Upgrade to keep optimizing.'
-                    : `${plan?.name || 'Free'} plan · ${Math.max(0, quota - usedImages).toLocaleString()} images left`}
+                    ? 'You have used this month’s images. Upgrade in Billing to continue.'
+                    : `${Math.max(0, quota - usedImages).toLocaleString()} left on ${plan?.name || 'Free'}`}
                 </p>
               </div>
             </div>
 
-            <div className="pl-card pl-auto">
-              <div className="pl-auto-head">
-                <p className="pl-card-title">Auto-Optimize</p>
+            <div className="pp-card pp-auto">
+              <div className="pp-auto-head">
+                <p className="pp-card-title">Auto-Optimize</p>
                 {plan?.autoOptimizeAllowed
                   ? <Badge tone={autoOptimize ? 'success' : undefined}>{autoOptimize ? 'On' : 'Off'}</Badge>
                   : <Badge tone="attention">Growth+</Badge>}
               </div>
-              <p className="pl-card-sub" style={{ marginTop: 0 }}>Optimize photos on new products automatically in the background.</p>
+              <p className="pp-card-sub" style={{ marginTop: 0 }}>Compress photos on new products as soon as they are created.</p>
               {plan?.autoOptimizeAllowed ? (
                 <Checkbox
-                  label="Optimize new products automatically"
+                  label="Compress new products automatically"
                   checked={autoOptimize}
                   onChange={handleToggleAutoOptimize}
                   disabled={settingsFetcher.state !== 'idle'}
@@ -506,11 +504,11 @@ export default function ProductOptimization() {
               )}
             </div>
 
-            <div className="pl-statbar pl-mini-stats">
+            <div className="pp-statbar pp-mini-stats">
               {kpis.map(k => (
-                <div key={k.label} className="pl-stat">
-                  <p className="pl-stat-label">{k.label}</p>
-                  <p className={`pl-stat-value${k.tone ? ` is-${k.tone}` : ''}`}>{k.value}</p>
+                <div key={k.label} className="pp-stat">
+                  <p className="pp-stat-label">{k.label}</p>
+                  <p className={`pp-stat-value${k.tone ? ` is-${k.tone}` : ''}`}>{k.value}</p>
                 </div>
               ))}
             </div>
@@ -519,32 +517,32 @@ export default function ProductOptimization() {
 
         {/* Product list */}
         <Layout.Section>
-          <div className="pl-list">
-            <div className="pl-toolbar">
-              <div className="pl-tabs" role="tablist" aria-label="Filter products">
+          <div className="pp-list">
+            <div className="pp-toolbar">
+              <div className="pp-tabs" role="tablist" aria-label="Filter products">
                 {filterOptions.map(o => (
                   <button
                     key={o.value}
                     type="button"
                     role="tab"
                     aria-selected={filter === o.value}
-                    className={`pl-tab${filter === o.value ? ' is-active' : ''}`}
+                    className={`pp-tab${filter === o.value ? ' is-active' : ''}`}
                     onClick={() => handleFilterChange(o.value)}
                     disabled={isBusy}
                   >
                     {o.label}
-                    <span className="pl-tab-count">{filterCounts[o.value]}</span>
+                    <span className="pp-tab-count">{filterCounts[o.value]}</span>
                   </button>
                 ))}
               </div>
-              <div className="pl-toolbar-sort">
+              <div className="pp-toolbar-sort">
                 <Box width="220px">
                   <Select label="Sort" labelInline options={sortOptions} value={sortBy} onChange={handleSortChange} disabled={isBusy} />
                 </Box>
               </div>
             </div>
 
-            <div className="pl-row pl-row-head">
+            <div className="pp-row pp-row-head">
               <Checkbox
                 label="Select all"
                 labelHidden
@@ -571,7 +569,7 @@ export default function ProductOptimization() {
                 const selected = selectedProducts.includes(product.id);
                 const scoreTone = product.score >= 80 ? 'good' : product.score >= 60 ? 'warn' : 'bad';
                 return (
-                  <div key={product.id} className={`pl-row${selected ? ' is-selected' : ''}${isActive ? ' is-active' : ''}`}>
+                  <div key={product.id} className={`pp-row${selected ? ' is-selected' : ''}${isActive ? ' is-active' : ''}`}>
                     <Checkbox
                       label={`Select ${product.title}`}
                       labelHidden
@@ -580,25 +578,25 @@ export default function ProductOptimization() {
                       disabled={isBusy}
                     />
                     <Thumbnail source={product.featuredImageUrl || ImageMagicIcon} alt={product.title} size="small" />
-                    <div className="pl-row-main">
-                      <p className="pl-row-title">{product.title}</p>
-                      <p className="pl-row-meta">
+                    <div className="pp-row-main">
+                      <p className="pp-row-title">{product.title}</p>
+                      <p className="pp-row-meta">
                         {`${product.status.charAt(0) + product.status.slice(1).toLowerCase()} · ${product.imageCount} ${product.imageCount === 1 ? 'image' : 'images'} · ${product.imagesWithAlt}/${product.imageCount} with alt text`}
-                        {isActive && <span className="pl-live">Optimizing</span>}
+                        {isActive && <span className="pp-live">Optimizing</span>}
                       </p>
                     </div>
-                    <div className="pl-row-progress">
+                    <div className="pp-row-progress">
                       <span>{`${product.optimizedImages} of ${product.imageCount}`}</span>
                       <Meter pct={product.score} label={`${product.score}% optimized`} />
                     </div>
-                    <div className="pl-row-saved">
+                    <div className="pp-row-saved">
                       <strong>{formatBytes(product.sizeSavedMB)}</strong>
                       <span>{`from ${formatBytes(product.totalOriginalSizeMB)}`}</span>
                     </div>
-                    <span className={`pl-score pl-score-${scoreTone}`}>
+                    <span className={`pp-score pp-score-${scoreTone}`}>
                       {`${product.score}%`}
                     </span>
-                    <div className="pl-row-action">
+                    <div className="pp-row-action">
                       {product.needsOptimization ? (
                         <Button size="slim" variant="primary" onClick={() => handleOptimizeProduct(product.id)} loading={isActive} disabled={isBusy || quotaReached}>
                           Optimize
@@ -616,11 +614,11 @@ export default function ProductOptimization() {
       </Layout>
 
       {selectedProducts.length > 0 && (
-        <div className="pl-bulkbar" role="region" aria-label="Bulk actions">
-          <span className="pl-bulkbar-count"><b>{selectedProducts.length}</b>{`product${selectedProducts.length === 1 ? '' : 's'} selected`}</span>
-          <div className="pl-bulkbar-actions">
-            <button type="button" className="pl-btn pl-btn-ghost" onClick={() => setSelectedProducts([])} disabled={isBusy}>Clear</button>
-            <button type="button" className="pl-btn pl-btn-bright" onClick={handleOptimizeSelected} disabled={isBusy || quotaReached}>
+        <div className="pp-bulkbar" role="region" aria-label="Bulk actions">
+          <span className="pp-bulkbar-count"><b>{selectedProducts.length}</b>{`product${selectedProducts.length === 1 ? '' : 's'} selected`}</span>
+          <div className="pp-bulkbar-actions">
+            <button type="button" className="pp-btn pp-btn-ghost" onClick={() => setSelectedProducts([])} disabled={isBusy}>Clear</button>
+            <button type="button" className="pp-btn pp-btn-bright" onClick={handleOptimizeSelected} disabled={isBusy || quotaReached}>
               {isBusy ? 'Optimizing…' : 'Optimize selected'}
             </button>
           </div>

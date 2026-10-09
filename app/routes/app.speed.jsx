@@ -45,7 +45,7 @@ const PRODUCTS_QUERY = `#graphql
         title
         handle
         onlineStoreUrl
-        summary: metafield(namespace: "image_optimization", key: "optimization_summary") { value }
+        summary: metafield(namespace: "pic_pace", key: "optimization_summary") { value }
       }
     }
   }
@@ -280,7 +280,7 @@ export async function action({ request }) {
   // Tier boundary: block report runs for non-entitled plans (defends the action
   // even if the UI were bypassed).
   if (!(await pageSpeedAllowed(admin, session.shop))) {
-    return { error: 'Speed Report is available on the Growth and Pro plans.' };
+    return { error: 'Page Speed is included in the Growth and Pro plans.' };
   }
   const formData = await request.formData();
   const actionType = formData.get('actionType');
@@ -427,7 +427,7 @@ export default function PageSpeedImpactReports() {
     >
       <Layout>
         <Layout.Section>
-          <PageHeader icon={GaugeIcon} eyebrow="Speed Report" title="Page speed & savings" subtitle="Measured file-size savings per product page, plus live Google Lighthouse tests" />
+          <PageHeader icon={GaugeIcon} title="Page Speed" subtitle="File size removed from each product page, with on-demand Google Lighthouse tests." />
         </Layout.Section>
         {loadError && (
           <Layout.Section>
@@ -447,23 +447,23 @@ export default function PageSpeedImpactReports() {
 
         {/* Measured optimization results */}
         <Layout.Section>
-          <div className="pl-statbar">
-            <div className="pl-stat">
-              <p className="pl-stat-label">Pages optimized</p>
-              <p className="pl-stat-value">{`${optimizedProducts}`}<span style={{ fontSize: 14, fontWeight: 500, color: 'var(--pl-muted)' }}>{` / ${totalProducts}`}</span></p>
+          <div className="pp-statbar">
+            <div className="pp-stat">
+              <p className="pp-stat-label">Pages optimized</p>
+              <p className="pp-stat-value">{`${optimizedProducts}`}<span style={{ fontSize: 14, fontWeight: 500, color: 'var(--pp-muted)' }}>{` / ${totalProducts}`}</span></p>
             </div>
-            <div className="pl-stat">
-              <p className="pl-stat-label">Space saved</p>
-              <p className="pl-stat-value is-good">{`${totalSavedMB.toFixed(1)} MB`}</p>
+            <div className="pp-stat">
+              <p className="pp-stat-label">Space saved</p>
+              <p className="pp-stat-value is-good">{`${totalSavedMB.toFixed(1)} MB`}</p>
             </div>
-            <div className="pl-stat">
-              <p className="pl-stat-label">Images optimized</p>
-              <p className="pl-stat-value">{totalImagesOptimized.toLocaleString()}</p>
+            <div className="pp-stat">
+              <p className="pp-stat-label">Images optimized</p>
+              <p className="pp-stat-value">{totalImagesOptimized.toLocaleString()}</p>
             </div>
-            <div className="pl-stat">
-              <p className="pl-stat-label">Average reduction</p>
-              <p className="pl-stat-value">{`${avgCompression.toFixed(0)}%`}</p>
-              <p className="pl-stat-hint">Measured from real file sizes</p>
+            <div className="pp-stat">
+              <p className="pp-stat-label">Average reduction</p>
+              <p className="pp-stat-value">{`${avgCompression.toFixed(0)}%`}</p>
+              <p className="pp-stat-hint">Measured from real file sizes</p>
             </div>
           </div>
         </Layout.Section>

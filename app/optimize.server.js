@@ -383,7 +383,7 @@ export async function writeSummary(admin, productId, totalImages, records) {
       variables: {
         metafields: [{
           ownerId: productId,
-          namespace: "image_optimization",
+          namespace: "pic_pace",
           key: "optimization_summary",
           type: "json",
           value: JSON.stringify({
@@ -426,7 +426,7 @@ export async function optimizeBatch(admin, productId, opts = {}) {
           media(first: 250) {
             edges { node { id ... on MediaImage { image { url altText } } } }
           }
-          metafields(first: 250, namespace: "image_optimization") {
+          metafields(first: 250, namespace: "pic_pace") {
             edges { node { key value } }
           }
         }
@@ -550,7 +550,7 @@ export async function optimizeBatch(admin, productId, opts = {}) {
         variables: {
           metafields: newRecords.map(r => ({
             ownerId: productId,
-            namespace: "image_optimization",
+            namespace: "pic_pace",
             key: r.key,
             type: "json",
             value: JSON.stringify(r.record),

@@ -61,7 +61,7 @@ const PRODUCTS_QUERY = `#graphql
         media(first: ${MAX_MEDIA_PER_PRODUCT}) {
           nodes { ... on MediaImage { id alt image { url } } }
         }
-        metafields(first: 50, namespace: "image_optimization") {
+        metafields(first: 50, namespace: "pic_pace") {
           nodes { key value updatedAt }
         }
       }
@@ -422,7 +422,7 @@ export default function ImageOptimizationDashboard() {
     >
       <Layout>
         <Layout.Section>
-          <PageHeader icon={ChartVerticalIcon} eyebrow="Analytics" title="Optimization analytics" subtitle="Space saved, size reduction and format breakdown" />
+          <PageHeader icon={ChartVerticalIcon} title="Reports" subtitle="Total size removed, average reduction and a breakdown by file format." />
         </Layout.Section>
         {loadError && (
           <Layout.Section>

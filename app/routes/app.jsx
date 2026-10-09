@@ -74,15 +74,15 @@ export default function App() {
         {/* No hard paywall: a shop without a paid subscription runs on the Free
             tier (see getBillingState), and upgrades happen from the Plan page. */}
         <ui-nav-menu>
-          <a href="/app" rel="home">Dashboard</a>
-          <a href="/app/optimize">Image Optimizer</a>
+          <a href="/app" rel="home">Home</a>
+          <a href="/app/optimize">Compress Images</a>
           {features?.altText && (
-            <a href="/app/alt-text">Alt Text AI</a>
+            <a href="/app/alt-text">Alt Text</a>
           )}
           {features?.pageSpeed && (
-            <a href="/app/speed">Speed Report</a>
+            <a href="/app/speed">Page Speed</a>
           )}
-          <a href="/app/plan">Plans &amp; usage</a>
+          <a href="/app/plan">Billing</a>
         </ui-nav-menu>
         <Outlet />
       </PolarisAppProvider>
